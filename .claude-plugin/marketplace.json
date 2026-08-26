@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "second-brain-kit",
+  "owner": {
+    "name": "Jassim Almulla",
+    "url": "https://github.com/jalmulla2"
+  },
+  "metadata": {
+    "description": "Marketplace hosting the second-brain-kit vault-setup plugin."
+  },
+  "plugins": [
+    {
+      "name": "second-brain-kit",
+      "description": "Set up a personal vault workspace with morning orientation, end-of-day logging, and project creation skills.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jassim Almulla",
+        "url": "https://github.com/jalmulla2"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/jalmulla2/second-brain-kit"
+    }
+  ]
+}

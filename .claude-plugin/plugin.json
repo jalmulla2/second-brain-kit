@@ -1,0 +1,19 @@
+{
+  "name": "second-brain-kit",
+  "description": "Set up a personal vault workspace with morning orientation, end-of-day logging, and project creation skills.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jassim Almulla",
+    "url": "https://github.com/jalmulla2"
+  },
+  "homepage": "https://github.com/jalmulla2/second-brain-kit",
+  "repository": "https://github.com/jalmulla2/second-brain-kit",
+  "license": "MIT",
+  "keywords": [
+    "productivity",
+    "second-brain",
+    "daily-log",
+    "project-management",
+    "vault"
+  ]
+}
