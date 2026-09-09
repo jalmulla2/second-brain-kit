@@ -1,8 +1,8 @@
 # second-brain-kit
 
-A small Claude Code / Claude Cowork plugin that sets up a personal "vault" workspace: a `CLAUDE.md` and `MEMORY.md` that give every session context, plus skills for running your day.
+A small Claude Code plugin that sets up a personal "vault" workspace: a `CLAUDE.md` and `MEMORY.md` that give every session context, plus skills for running your day.
 
-Claude forgets everything between conversations. This plugin fixes that with plain markdown files in a folder you own — a context file Claude reads at the start of every session, a daily log it writes at the end of one, and a project folder structure both of those point at. No database, no sync service, no lock-in.
+Claude Code forgets everything between conversations. This plugin fixes that with plain markdown files in a folder you own — a context file Claude reads at the start of every session, a daily log it writes at the end of one, and a project folder structure both of those point at. No database, no sync service, no lock-in.
 
 ## What's inside
 
@@ -19,33 +19,49 @@ You can work in **Arabic or English** — pick during `vault-setup`. That choice
 
 ## Install
 
+Everything below happens in the terminal, in Claude Code.
+
+### 0. Prerequisite — Claude Code
+
+If you don't have it yet:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Check it's there:
+
+```bash
+claude --version
+```
+
 ### 1. Pick the folder that will be your vault
 
-The plugin writes into whatever directory Claude is working in, so decide this first. Make a folder anywhere you like — an existing Obsidian vault works well, since everything here is plain markdown:
+The plugin writes into whatever directory Claude Code was started in, so decide this first. Make a folder anywhere you like — an existing Obsidian vault works well, since everything here is plain markdown:
 
 ```bash
 mkdir -p ~/Vault
 ```
 
-In **Claude Code**, `cd` into it before starting:
+### 2. Start Claude Code in that folder
 
 ```bash
 cd ~/Vault && claude
 ```
 
-In the **Claude desktop app**, open that folder as the working directory. In **Cowork**, point the session at it.
+This matters more than it looks: `cd` into the vault every time. A session started somewhere else will read and write the wrong `CLAUDE.md`.
 
-### 2. Add the marketplace
+### 3. Add the marketplace
 
-Inside a Claude session, run:
+At the Claude Code prompt, type:
 
 ```
 /plugin marketplace add jalmulla2/second-brain-kit
 ```
 
-This tells Claude where to find the plugin. It reads `.claude-plugin/marketplace.json` from this repo — nothing is installed yet.
+This tells Claude Code where to find the plugin. It reads `.claude-plugin/marketplace.json` from this repo — nothing is installed yet.
 
-### 3. Install the plugin
+### 4. Install the plugin
 
 ```
 /plugin install second-brain-kit@second-brain-kit
@@ -53,15 +69,23 @@ This tells Claude where to find the plugin. It reads `.claude-plugin/marketplace
 
 The first `second-brain-kit` is the plugin, the second is the marketplace it came from — they happen to share a name.
 
-If you'd rather click than type, just run `/plugin` on its own and pick the plugin from the interactive browser.
+If you'd rather browse than type, run `/plugin` on its own and pick it from the interactive menu.
 
-### 4. Restart Claude
+### 5. Restart Claude Code
 
-Skills are loaded at startup. Quit and reopen Claude (or restart the desktop app) so the four skills register.
+Skills are loaded at startup. Exit and start again from the same folder:
 
-### 5. Verify
+```
+/exit
+```
 
-Run `/plugin` and confirm `second-brain-kit` shows as installed, or simply say **"set up my vault"** — if the setup interview starts, you're good.
+```bash
+cd ~/Vault && claude
+```
+
+### 6. Verify
+
+Run `/plugin` and confirm `second-brain-kit` shows as installed, or just say **"set up my vault"** — if the setup interview starts, you're good.
 
 ---
 
@@ -93,9 +117,9 @@ The whole thing is three moments in a day. You never call a skill by name — yo
 
 ### Morning — "good morning"
 
-Say **"good morning"** (or "morning", "let's get to work", "what should I work on?") at the start of a session.
+Say **"good morning"** (or "morning", "let's get to work", "what should I work on?") right after `cd ~/Vault && claude`.
 
-Claude reads `CLAUDE.md`, your last three daily logs, and every active project overview, then gives you a short briefing grouped by project — what was worked on, what's still open — followed by one clear recommendation for what to do next. It then asks whether you want to jump into an existing project or start something new.
+Claude Code reads `CLAUDE.md`, your last three daily logs, and every active project overview, then gives you a short briefing grouped by project — what was worked on, what's still open — followed by one clear recommendation for what to do next. It then asks whether you want to jump into an existing project or start something new.
 
 Do this *before* asking Claude for anything else. It's what loads the context.
 
@@ -117,11 +141,15 @@ One check it will push back on: if you can't say what "done" looks like, it's an
 
 `end-of-day` writes the handoff note. Most of the time you don't have to ask: **any session that actually changed something in the vault gets logged automatically** when the conversation closes. Sessions that only read or discussed things write nothing, and that's correct — a missing day means there was no work to hand off.
 
-To write one explicitly, say **"end of day"** ("wrap up", "we're done", "done for the day").
+To write one explicitly, say **"end of day"** ("wrap up", "we're done", "done for the day") before you `/exit`.
 
 Logs land in `01 Daily Logs/YYYY-MM-DD.md`, one `## [Project Name]` section per project you touched that day, each with what was worked on, what changed, what's still open, and where to pick up next time. Work past midnight and it still writes to the day the session started — anything before 06:00 goes to the previous day's file.
 
 ### A typical week
+
+```bash
+cd ~/Vault && claude
+```
 
 ```
 Monday    "good morning"        → recap + recommendation
@@ -160,7 +188,7 @@ Pull the latest version of the plugin:
 /plugin marketplace update second-brain-kit
 ```
 
-Then restart Claude. Your vault files are never touched by an update — the plugin only ships skills.
+Then `/exit` and start Claude Code again. Your vault files are never touched by an update — the plugin only ships skills.
 
 To remove it:
 
@@ -175,13 +203,13 @@ Your `CLAUDE.md`, logs, and projects stay exactly where they are.
 ## Troubleshooting
 
 **"Nothing happens when I say good morning."**
-The skills didn't load. Restart Claude, then check `/plugin` shows `second-brain-kit` as installed.
+The skills didn't load. `/exit`, start Claude Code again, then check `/plugin` shows `second-brain-kit` as installed.
 
-**"Claude says it can't find CLAUDE.md."**
-The session isn't running in your vault folder, or setup never ran. Check the working directory first, then say "set up my vault".
+**"Claude Code says it can't find CLAUDE.md."**
+The session wasn't started in your vault folder, or setup never ran. Run `pwd` — if it isn't your vault, `/exit` and start again with `cd ~/Vault && claude`. If the path is right, say "set up my vault".
 
 **"It created the files in the wrong place."**
-Skills write relative to the session's working directory. Move the files to your real vault folder and start future sessions from there.
+Skills write relative to the directory Claude Code was started in. Move the files to your real vault folder and always launch with `cd ~/Vault && claude`.
 
 **"good-morning doesn't see my project."**
 It reads the `## Active Projects` table in `CLAUDE.md`. If the project folder exists but the row doesn't, add the row.
