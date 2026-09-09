@@ -89,6 +89,52 @@ Run `/plugin` and confirm `second-brain-kit` shows as installed, or just say **"
 
 ---
 
+## Manual install (no marketplace fetch)
+
+If you'd rather grab the files yourself — offline, behind a firewall, or you just prefer having the folder on disk — download the repo instead of adding it by name.
+
+On GitHub, hit **Code → Download ZIP**, then unzip it. GitHub appends the branch name, so you get `second-brain-kit-main`:
+
+```bash
+unzip ~/Downloads/second-brain-kit-main.zip -d ~/
+```
+
+Or clone it, if you'd rather be able to `git pull` later:
+
+```bash
+git clone https://github.com/jalmulla2/second-brain-kit.git ~/second-brain-kit
+```
+
+Then start Claude Code in your vault and add the **folder** as the marketplace:
+
+```
+/plugin marketplace add ~/second-brain-kit-main
+```
+
+```
+/plugin install second-brain-kit@second-brain-kit
+```
+
+`/exit`, relaunch with `cd ~/Vault && claude`, and you're in the same place as the normal install.
+
+Three things to know:
+
+- **The path must be the unzipped folder, not the `.zip`** — it needs to contain `.claude-plugin/marketplace.json`. If Finder unzipped it for you, that's `~/Downloads/second-brain-kit-main`.
+- **Don't delete or move the folder afterwards.** The marketplace points at that directory; it isn't a copy. Put it somewhere permanent *before* you add it.
+- **A ZIP install can't update itself.** `/plugin marketplace update` has nothing to pull from. To upgrade, download the ZIP again, replace the folder, and restart Claude Code. Clone instead if you want `git pull` to work.
+
+### Or skip plugins entirely
+
+The skills are just folders with a `SKILL.md` in them. Copying them into your personal skills directory works too:
+
+```bash
+cp -r ~/second-brain-kit-main/skills/* ~/.claude/skills/
+```
+
+Restart Claude Code and all four are available. You lose plugin-managed updates and `/plugin uninstall` — you'd add and remove these folders by hand.
+
+---
+
 ## Getting started
 
 Once installed, say:
