@@ -1,6 +1,8 @@
 # second-brain-kit
 
-A small Claude Code / Claude Cowork plugin that sets up a personal "vault" workspace: a `CLAUDE.md` and `MEMORY.md` that give every session context, plus three skills for running your day.
+A small Claude Code / Claude Cowork plugin that sets up a personal "vault" workspace: a `CLAUDE.md` and `MEMORY.md` that give every session context, plus skills for running your day.
+
+Claude forgets everything between conversations. This plugin fixes that with plain markdown files in a folder you own — a context file Claude reads at the start of every session, a daily log it writes at the end of one, and a project folder structure both of those point at. No database, no sync service, no lock-in.
 
 ## What's inside
 
@@ -13,22 +15,181 @@ A small Claude Code / Claude Cowork plugin that sets up a personal "vault" works
 
 You can work in **Arabic or English** — pick during `vault-setup`. That choice controls the language Claude uses to talk to you and the language of everything it writes into your logs and project files. File names and folder names always stay in English so paths keep working the same way either way.
 
+---
+
 ## Install
+
+### 1. Pick the folder that will be your vault
+
+The plugin writes into whatever directory Claude is working in, so decide this first. Make a folder anywhere you like — an existing Obsidian vault works well, since everything here is plain markdown:
+
+```bash
+mkdir -p ~/Vault
+```
+
+In **Claude Code**, `cd` into it before starting:
+
+```bash
+cd ~/Vault && claude
+```
+
+In the **Claude desktop app**, open that folder as the working directory. In **Cowork**, point the session at it.
+
+### 2. Add the marketplace
+
+Inside a Claude session, run:
 
 ```
 /plugin marketplace add jalmulla2/second-brain-kit
-/plugin install second-brain-kit
 ```
+
+This tells Claude where to find the plugin. It reads `.claude-plugin/marketplace.json` from this repo — nothing is installed yet.
+
+### 3. Install the plugin
+
+```
+/plugin install second-brain-kit@second-brain-kit
+```
+
+The first `second-brain-kit` is the plugin, the second is the marketplace it came from — they happen to share a name.
+
+If you'd rather click than type, just run `/plugin` on its own and pick the plugin from the interactive browser.
+
+### 4. Restart Claude
+
+Skills are loaded at startup. Quit and reopen Claude (or restart the desktop app) so the four skills register.
+
+### 5. Verify
+
+Run `/plugin` and confirm `second-brain-kit` shows as installed, or simply say **"set up my vault"** — if the setup interview starts, you're good.
+
+---
 
 ## Getting started
 
-Once installed, just say:
+Once installed, say:
 
 ```
 set up my vault
 ```
 
-That runs `vault-setup`. After it finishes, say **"good morning"** to start your first real session, or **"new project"** to create your first project right away.
+That runs `vault-setup`. It asks three things — your name, Arabic or English, and one loose line about what the vault is for — then creates:
+
+```
+your-vault/
+├── CLAUDE.md          ← read at the start of every session
+├── MEMORY.md          ← current state that has to survive between sessions
+├── 01 Daily Logs/     ← one file per day of work
+└── 02 Projects/       ← one folder per project
+```
+
+Then say **"good morning"** to start your first real session, or **"new project"** to create your first project right away.
+
+---
+
+## Using it day to day
+
+The whole thing is three moments in a day. You never call a skill by name — you just talk, and the phrasing triggers the right one.
+
+### Morning — "good morning"
+
+Say **"good morning"** (or "morning", "let's get to work", "what should I work on?") at the start of a session.
+
+Claude reads `CLAUDE.md`, your last three daily logs, and every active project overview, then gives you a short briefing grouped by project — what was worked on, what's still open — followed by one clear recommendation for what to do next. It then asks whether you want to jump into an existing project or start something new.
+
+Do this *before* asking Claude for anything else. It's what loads the context.
+
+### Whenever you start something new — "new project"
+
+Say **"new project"** (or "start a project", "I want to work on something new").
+
+Claude interviews you: name, goal, why it matters, what "done" looks like, and any problems you already know you'll hit. Then it creates:
+
+```
+02 Projects/<Project Name>/PROJ <Project Name> Overview.md
+```
+
+and adds a row to the `## Active Projects` table in `CLAUDE.md` — which is what makes `good-morning` aware of it tomorrow.
+
+One check it will push back on: if you can't say what "done" looks like, it's an ongoing area of responsibility, not a project, and Claude will say so rather than create a folder that can never close.
+
+### End of a session — usually automatic
+
+`end-of-day` writes the handoff note. Most of the time you don't have to ask: **any session that actually changed something in the vault gets logged automatically** when the conversation closes. Sessions that only read or discussed things write nothing, and that's correct — a missing day means there was no work to hand off.
+
+To write one explicitly, say **"end of day"** ("wrap up", "we're done", "done for the day").
+
+Logs land in `01 Daily Logs/YYYY-MM-DD.md`, one `## [Project Name]` section per project you touched that day, each with what was worked on, what changed, what's still open, and where to pick up next time. Work past midnight and it still writes to the day the session started — anything before 06:00 goes to the previous day's file.
+
+### A typical week
+
+```
+Monday    "good morning"        → recap + recommendation
+          "new project"         → Client Onboarding created
+          ...work...            → log written automatically on close
+
+Tuesday   "good morning"        → picks up Client Onboarding from Monday's log
+          ...work...
+          "end of day"          → explicit log before you close the laptop
+
+Wednesday "good morning"        → sees both days, recommends what's most urgent
+```
+
+---
+
+## The files you own
+
+| File | What it's for | Edit it yourself? |
+|---|---|---|
+| `CLAUDE.md` | Who you are, your language, the active-projects table, skills available. Read first in every session. | Yes — keep it short. It's read every time. |
+| `MEMORY.md` | Current state only, not a history — open questions, pending decisions. Delete blocks when they stop being true. | Yes. |
+| `01 Daily Logs/*.md` | Session handoff notes, written by `end-of-day`. | Rarely — let the skill own these. |
+| `02 Projects/*/PROJ * Overview.md` | Goal, why, outcomes, open problems, and an optional `## Tasks` section. | Yes — this is the file to keep current. |
+
+Tasks live inside each project's own overview. There is no central task list, by design.
+
+Since it's all markdown in a folder, you can put the vault in git, open it in Obsidian, or sync it with anything that moves files.
+
+---
+
+## Updating and removing
+
+Pull the latest version of the plugin:
+
+```
+/plugin marketplace update second-brain-kit
+```
+
+Then restart Claude. Your vault files are never touched by an update — the plugin only ships skills.
+
+To remove it:
+
+```
+/plugin uninstall second-brain-kit@second-brain-kit
+```
+
+Your `CLAUDE.md`, logs, and projects stay exactly where they are.
+
+---
+
+## Troubleshooting
+
+**"Nothing happens when I say good morning."**
+The skills didn't load. Restart Claude, then check `/plugin` shows `second-brain-kit` as installed.
+
+**"Claude says it can't find CLAUDE.md."**
+The session isn't running in your vault folder, or setup never ran. Check the working directory first, then say "set up my vault".
+
+**"It created the files in the wrong place."**
+Skills write relative to the session's working directory. Move the files to your real vault folder and start future sessions from there.
+
+**"good-morning doesn't see my project."**
+It reads the `## Active Projects` table in `CLAUDE.md`. If the project folder exists but the row doesn't, add the row.
+
+**"Setup ran twice."**
+`vault-setup` checks for an existing `CLAUDE.md` and asks before overwriting. If you said yes by mistake, your logs and project folders are untouched — only `CLAUDE.md` and `MEMORY.md` were rewritten.
+
+---
 
 ## License
 
