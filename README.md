@@ -53,23 +53,41 @@ This matters more than it looks: `cd` into the vault every time. A session start
 
 ### 3. Add the marketplace
 
-At the Claude Code prompt, type:
+The simplest way is to copy this repo's link and paste it into the plugin menu.
+
+At the Claude Code prompt, run:
+
+```
+/plugin
+```
+
+Choose the option to add a marketplace, then paste:
+
+```
+https://github.com/jalmulla2/second-brain-kit
+```
+
+That's the same URL as the address bar on this page — copy it from there if it's easier.
+
+If you'd rather type one line than click through the menu, this does exactly the same thing:
 
 ```
 /plugin marketplace add jalmulla2/second-brain-kit
 ```
 
-This tells Claude Code where to find the plugin. It reads `.claude-plugin/marketplace.json` from this repo — nothing is installed yet.
+Either way, Claude Code now knows where to find the plugin — it reads `.claude-plugin/marketplace.json` from this repo. Nothing is installed yet.
 
 ### 4. Install the plugin
+
+Still in `/plugin`, pick **second-brain-kit** from the marketplace you just added and install it.
+
+Or by command:
 
 ```
 /plugin install second-brain-kit@second-brain-kit
 ```
 
 The first `second-brain-kit` is the plugin, the second is the marketplace it came from — they happen to share a name.
-
-If you'd rather browse than type, run `/plugin` on its own and pick it from the interactive menu.
 
 ### 5. Restart Claude Code
 
