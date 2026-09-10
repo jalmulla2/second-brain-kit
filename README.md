@@ -303,6 +303,67 @@ Your `CLAUDE.md`, logs, and projects stay exactly where they are.
 
 ---
 
+## Upgrading a vault set up on v1.0
+
+An update ships new skills but never touches your files — which means a vault created before v1.1 still has the old `CLAUDE.md`, and the skills will look for rules that aren't in it. Nothing breaks, but the language rule won't stick and new files won't link themselves until you add the missing blocks.
+
+**Do not re-run `vault-setup` to fix this.** It rewrites `CLAUDE.md` from scratch, and your `## Active Projects` table goes with it.
+
+### 1. Update `CLAUDE.md`
+
+Open it and replace the old one-line `## Language` section with the block below, then add the two sections after it. Leave `## About`, `## Active Projects` and `## Skills Available` alone.
+
+```markdown
+## Language
+Default language: <Arabic | English>.
+
+- Speak in the default language, and write the body of every file you create in it — daily logs, project overviews, notes.
+- If the user writes a message in the other language, follow them: switch to that language and stay in it for the rest of this conversation. Don't drift back mid-conversation.
+- A new conversation starts from the default again. Language does not carry over between sessions.
+- Always English, whatever the conversation language: folder names, file names, YAML frontmatter keys, and Markdown section headings. Only prose and values change language.
+
+## File Conventions
+- Frontmatter on every note you create: `title`, `description`, `author: claude`, `type`, `project`, `date`, `update date`, `status`, `tags: []`.
+- `description` is one sentence. Its job is to let an agent judge whether the note is relevant without opening the body — write it for that, not as the title restated.
+- `project` applies only to files inside a project folder. Elsewhere, omit the key rather than leaving it blank.
+- Wikilinks address a note by **filename only** — `[[PROJ Example Overview]]`, never a path. A path-bearing link is the only kind a folder move can break.
+- Never start a filename with `[`. Obsidian cannot link to it.
+- Never create two notes with the same basename anywhere in the vault. Duplicate basenames make every link to them ambiguous.
+
+## Project Files
+Any file you create inside a project folder — in the same action that creates it:
+1. Set `project: "[[PROJ <Project Name> Overview]]"` in its frontmatter. This is what makes the hub collect it as a backlink.
+2. Add a row to that project's `## Key Files` table in `PROJ <Project Name> Overview.md`, and set the hub's `update date`.
+
+The hub itself is the exception to (1): a file cannot belong to itself, so `PROJ ... Overview.md` carries no `project` key.
+
+Daily logs are the exception to both. A log carries no `project` key and no wikilinks — it names a project with a `## <Project Name>` heading and nothing more. Logs are terminal: nothing links out of them, so nothing in them can break when a note is renamed.
+```
+
+Or just ask Claude to do it — with the plugin updated, "add the v1.1 blocks to my CLAUDE.md" is enough, since the skills carry the same text.
+
+### 2. Backfill your existing projects
+
+Existing hub files have no `## Key Files` or `## Links Out`, and the files already sitting in those folders have no `project` frontmatter. Ask Claude once per project:
+
+```
+Backfill the Key Files table in this project's hub and add the project frontmatter to its files
+```
+
+Or skip it — `end-of-day` reconciles a project the next time you touch a file in it. Backfilling is only worth doing for projects you want linked *now*.
+
+### 3. Add the optional folders, if you want them
+
+There's nothing to run. `03 Life/` and `raw/` are detected by their existence:
+
+```bash
+mkdir -p "03 Life/Projects" raw/processed
+```
+
+Once `03 Life/` exists, `new-project` starts asking whether a project is work or personal. Nothing else needs to change.
+
+---
+
 ## Troubleshooting
 
 **"Nothing happens when I say good morning."**
