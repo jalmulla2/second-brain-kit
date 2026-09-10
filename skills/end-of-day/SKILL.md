@@ -19,7 +19,7 @@ A session that only read, searched or discussed writes nothing. Gaps in the log 
 
 ## Language
 
-Write the log content — the bullet points under each section — in whichever language `CLAUDE.md` specifies under `## Language`. Keep the frontmatter keys, section headings, the `01 Daily Logs/` folder name, and the `YYYY-MM-DD.md` filename format in English regardless of that setting.
+Follow the `## Language` block in `CLAUDE.md`. Do not restate or reinterpret the rule here.
 
 ## Conversation-Close Behaviour (automatic, silent)
 
@@ -27,9 +27,10 @@ When this skill is triggered by a conversation closing (not an explicit user req
 
 1. Scan the conversation for meaningful work — if the conversation was purely exploratory chat with no real output or decisions, skip logging entirely.
 2. Work out which day's log to write to (see "Which day" below), and check whether it exists.
-3. If it **does not exist** — create it (full format below).
+3. If it **does not exist** — create it (full format in Step 3).
 4. If it **does exist** — read the existing content first. If this conversation's project/topic is already covered, check whether there is new content to add (new tasks done, new files built, new open items). If so, append to the existing section or add a new section. If nothing new, skip.
-5. Do NOT ask the user questions. Do NOT confirm with the user. Just write and close.
+5. Reconcile the project hubs (Step 2) either way — that runs whether the log was created, appended to, or skipped for having nothing new.
+6. Do NOT ask the user questions. Do NOT confirm with the user. Just write and close.
 
 ## Which day — the after-midnight rule
 
@@ -60,9 +61,23 @@ Look back through the conversation and pull out what matters:
 
 Write it like a note to a colleague taking over the shift — enough to orient them fast, not so much they have to read an essay. If nothing is clearly "still open," skip that section. Don't pad.
 
-Note: Tasks live inside each project's own overview file under a `## Tasks` section, if it has one. There is no central task list — don't create or look for one.
+Note: Tasks live inside each project's own hub file under a `## Tasks` section, if it has one. There is no central task list — don't create or look for one. The hub's other sections are `## Key Files` and `## Links Out`; don't invent a second home for either.
 
-## Step 2 — Save the log
+## Step 2 — Reconcile the project hubs
+
+You just listed, under "What was built or changed", the files this session created or edited. For each of those that lives inside a project folder:
+
+1. Check its frontmatter carries `project: "[[PROJ <Project Name> Overview]]"`. Add it if missing.
+2. Check the project hub's `## Key Files` table has a row for it. If not, add:
+   `| [[Filename Without Extension]] | <short phrase: what this file is for> |`
+   Delete the `_No files yet_` placeholder line when you add the first row.
+3. If you touched the hub, set its `update date` to the log date.
+
+This is a safety net, not the primary mechanism — the row should already have been added when the file was created, per `## Project Files` in `CLAUDE.md`. Add only what is missing. Never rewrite an existing row, and never add a row for a file this session didn't touch.
+
+**The log itself gets no links.** Don't put a `project` key in the log's frontmatter and don't put a `[[wikilink]]` anywhere in it. A log names a project with its `## <Project Name>` heading, in plain text. Logs are terminal: they point at nothing, so nothing in them can go stale or break when a note is renamed.
+
+## Step 3 — Save the log
 
 Save to:
 
@@ -85,6 +100,8 @@ Note: `01 Daily Logs/` is at the **root** of the workspace.
 Each project session gets its own clearly labeled `## [Project Name]` section so good-morning can scan all projects from a single file.
 
 ### Format for a NEW file:
+
+Logs use this reduced frontmatter deliberately — no `project`, no `description`. See `## Project Files` in `CLAUDE.md` for why.
 
 ```markdown
 ---
@@ -134,7 +151,7 @@ Add only the project section — no new frontmatter or top-level heading:
 
 Only include "Still Open" if there's actually something unresolved. Don't invent open items.
 
-## Step 3 — Confirm (explicit user request only)
+## Step 4 — Confirm (explicit user request only)
 
 If triggered by the user explicitly, tell them where the file was saved and give them the "Start Here Next Time" line so they know the handoff is solid. Keep it to one or two lines — they're done for the day.
 

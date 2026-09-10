@@ -8,12 +8,14 @@ Claude Code forgets everything between conversations. This plugin fixes that wit
 
 | Skill | What it does |
 |---|---|
-| `vault-setup` | One-time setup. Interviews you (name, language, what the vault is for) and creates `CLAUDE.md`, `MEMORY.md`, and the `01 Daily Logs/` / `02 Projects/` folders. |
-| `good-morning` | Start-of-day orientation. Reads recent logs and active projects, recaps what happened, and recommends what to work on next. |
-| `end-of-day` | Writes a short handoff log for the current session so the next session can pick up where you left off. |
-| `new-project` | Interviews you about a new project and creates its folder, overview file, and an entry in `CLAUDE.md`. |
+| `vault-setup` | One-time setup. Asks five questions, one at a time, then creates `CLAUDE.md`, `MEMORY.md`, `01 Daily Logs/`, `02 Projects/`, and — if you want them — `03 Life/` and `raw/`. |
+| `good-morning` | Start-of-day orientation. Leads with what's still open, then what got finished, then one recommendation for what to work on. |
+| `end-of-day` | Writes a short handoff log for the current session, and reconciles each project's Key Files table so nothing goes unlinked. |
+| `new-project` | Interviews you one question at a time, then creates the project folder, its hub file, and an entry in `CLAUDE.md`. |
 
-You can work in **Arabic or English** — pick during `vault-setup`. That choice controls the language Claude uses to talk to you and the language of everything it writes into your logs and project files. File names and folder names always stay in English so paths keep working the same way either way.
+You can work in **Arabic or English** — pick during `vault-setup`. That choice is the default for everything Claude says and everything it writes into your logs and project files. If you write to Claude in the other language it follows you for the rest of that conversation; the next session starts from your default again.
+
+Folder names, file names, frontmatter keys and section headings always stay English, whatever language you're speaking, so paths and links keep working the same way either way.
 
 ---
 
@@ -161,15 +163,28 @@ Once installed, say:
 set up my vault
 ```
 
-That runs `vault-setup`. It asks three things — your name, Arabic or English, and one loose line about what the vault is for — then creates:
+That runs `vault-setup`. It asks five questions — **one per message**, so you answer each before the next arrives:
+
+1. What should I call you?
+2. Arabic or English?
+3. What is this vault for? (one loose line)
+4. Do you want a separate space for personal things?
+5. Do you want a `raw/` folder for source material you didn't write?
+
+Then it creates:
 
 ```
 your-vault/
 ├── CLAUDE.md          ← read at the start of every session
 ├── MEMORY.md          ← current state that has to survive between sessions
 ├── 01 Daily Logs/     ← one file per day of work
-└── 02 Projects/       ← one folder per project
+├── 02 Projects/       ← one folder per project
+├── 03 Life/           ← optional: personal projects, kept apart from work
+└── raw/               ← optional: source material you didn't write
+    └── processed/     ← sources you've already written a note from
 ```
+
+The last two only appear if you said yes. `raw/` has a rule that makes it work: nothing in it is ever edited or deleted, and once you've written a note from a source you move the source into `processed/`. Whatever's in `raw/` but not `processed/` is your unprocessed queue — no list to maintain. It is not an inbox.
 
 Then say **"good morning"** to start your first real session, or **"new project"** to create your first project right away.
 
@@ -183,7 +198,7 @@ The whole thing is three moments in a day. You never call a skill by name — yo
 
 Say **"good morning"** (or "morning", "let's get to work", "what should I work on?") right after `cd ~/Vault && claude`.
 
-Claude Code reads `CLAUDE.md`, your last three daily logs, and every active project overview, then gives you a short briefing grouped by project — what was worked on, what's still open — followed by one clear recommendation for what to do next. It then asks whether you want to jump into an existing project or start something new.
+Claude Code reads `CLAUDE.md`, `MEMORY.md`, your last three daily logs, and every active project hub. Then it briefs you — **open items first**, because that's the part that needs a decision today, with an age on anything that's been carried for days. Finished work comes second, in a couple of lines. Then one clear recommendation. It ends by asking whether you want to jump into an existing project or start something new.
 
 Do this *before* asking Claude for anything else. It's what loads the context.
 
@@ -191,13 +206,15 @@ Do this *before* asking Claude for anything else. It's what loads the context.
 
 Say **"new project"** (or "start a project", "I want to work on something new").
 
-Claude interviews you: name, goal, why it matters, what "done" looks like, and any problems you already know you'll hit. Then it creates:
+Claude interviews you **one question per message**: name, goal, why it matters, what "done" looks like, and any problems you already know you'll hit. If you have a `03 Life/` folder it also asks whether this one is work or personal. Then it creates:
 
 ```
 02 Projects/<Project Name>/PROJ <Project Name> Overview.md
 ```
 
-and adds a row to the `## Active Projects` table in `CLAUDE.md` — which is what makes `good-morning` aware of it tomorrow.
+— or `03 Life/Projects/<Project Name>/...` for a personal one — and adds a row to the `## Active Projects` table in `CLAUDE.md`, which is what makes `good-morning` aware of it tomorrow. The row looks the same either way, because it links by filename rather than path.
+
+That overview file is the project's **hub**: goal, why, outcomes, open problems, a `## Key Files` table linking every file in the project, and `## Links Out` for related notes elsewhere.
 
 One check it will push back on: if you can't say what "done" looks like, it's an ongoing area of responsibility, not a project, and Claude will say so rather than create a folder that can never close.
 
@@ -208,6 +225,8 @@ One check it will push back on: if you can't say what "done" looks like, it's an
 To write one explicitly, say **"end of day"** ("wrap up", "we're done", "done for the day") before you `/exit`.
 
 Logs land in `01 Daily Logs/YYYY-MM-DD.md`, one `## [Project Name]` section per project you touched that day, each with what was worked on, what changed, what's still open, and where to pick up next time. Work past midnight and it still writes to the day the session started — anything before 06:00 goes to the previous day's file.
+
+It also does one bit of housekeeping: for every file it just listed as built or changed, it makes sure that file points at its project hub and appears in the hub's `## Key Files` table. Files created outside a session get picked up here.
 
 ### A typical week
 
@@ -229,6 +248,24 @@ Wednesday "good morning"        → sees both days, recommends what's most urgen
 
 ---
 
+## How your notes link up
+
+Open the vault in Obsidian and the graph is not a pile of disconnected files. Three links do the work:
+
+| From | To | Written when |
+|---|---|---|
+| `CLAUDE.md`'s Active Projects table | the project hub | a project is created |
+| the hub's `## Key Files` table | every file in the project | each file is created, and reconciled at end of session |
+| every file's `project:` frontmatter | back to its hub | each file is created |
+
+That third one is the quiet workhorse — it means the hub's backlinks pane lists the whole project without anyone maintaining a list.
+
+**Daily logs deliberately link to nothing.** A log names a project with a `## Project Name` heading and no wikilink at all. This is on purpose: nothing should link to a Tuesday. Logs are where events go, so they are written once and never need repairing when a note is renamed or moved. If your graph shows the logs sitting off to one side, unconnected, that's the design working — not a bug.
+
+Every wikilink is written as a **filename only** — `[[PROJ Client Onboarding Overview]]`, never a path. Path-bearing links are the only kind that break when you move a folder, so the vault simply doesn't create any. The tradeoff is that note names have to be unique across the vault, which is why `new-project` checks for a collision before creating anything.
+
+---
+
 ## The files you own
 
 | File | What it's for | Edit it yourself? |
@@ -236,11 +273,13 @@ Wednesday "good morning"        → sees both days, recommends what's most urgen
 | `CLAUDE.md` | Who you are, your language, the active-projects table, skills available. Read first in every session. | Yes — keep it short. It's read every time. |
 | `MEMORY.md` | Current state only, not a history — open questions, pending decisions. Delete blocks when they stop being true. | Yes. |
 | `01 Daily Logs/*.md` | Session handoff notes, written by `end-of-day`. | Rarely — let the skill own these. |
-| `02 Projects/*/PROJ * Overview.md` | Goal, why, outcomes, open problems, and an optional `## Tasks` section. | Yes — this is the file to keep current. |
+| `02 Projects/*/PROJ * Overview.md` | The project hub: goal, why, tangible outcomes, open problems, `## Key Files`, `## Links Out`, and an optional `## Tasks` section. | Yes — this is the file to keep current. |
+| `03 Life/` | Same shape as `02 Projects/`, for things that aren't work. Optional. | Yes. |
+| `raw/` | Source material you didn't write. Never edited, never deleted; move a source to `raw/processed/` once you've written from it. Optional. | Add files, don't edit them. |
 
-Tasks live inside each project's own overview. There is no central task list, by design.
+Tasks live inside each project's own hub file. There is no central task list, by design.
 
-Since it's all markdown in a folder, you can put the vault in git, open it in Obsidian, or sync it with anything that moves files.
+Since it's all markdown in a folder, you can put the vault in git or sync it with anything that moves files. It's shaped for Obsidian in particular — the wikilinks and frontmatter mean graph view and the backlinks pane work properly from day one.
 
 ---
 
@@ -277,6 +316,12 @@ Skills write relative to the directory Claude Code was started in. Move the file
 
 **"good-morning doesn't see my project."**
 It reads the `## Active Projects` table in `CLAUDE.md`. If the project folder exists but the row doesn't, add the row.
+
+**"My project's Key Files table is empty."**
+Rows are added as files are created, and reconciled when a session ends. If you added files outside a session — copied them in from the shell, say — say "end of day" and they'll be picked up.
+
+**"Claude answered me in the wrong language."**
+It follows whichever language you write in, and stays there for the rest of the conversation. Start a new session to get back to your default, or edit the `## Language` block in `CLAUDE.md` to change the default itself.
 
 **"Setup ran twice."**
 `vault-setup` checks for an existing `CLAUDE.md` and asks before overwriting. If you said yes by mistake, your logs and project folders are untouched — only `CLAUDE.md` and `MEMORY.md` were rewritten.
